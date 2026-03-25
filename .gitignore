@@ -39,3 +39,15 @@
 
 # debug information files
 *.dwo
+
+# macOS
+.DS_Store
+
+# Code editor files
+.vscode/
+.idea/
+.qodo/
+
+# Data
+*.csv
+*.log
