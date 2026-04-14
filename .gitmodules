@@ -1,0 +1,3 @@
+[submodule "third_party/batch-dynamic-kcore-decomposition"]
+	path = third_party/batch-dynamic-kcore-decomposition
+	url = git@github.com:qqliu/batch-dynamic-kcore-decomposition.git
