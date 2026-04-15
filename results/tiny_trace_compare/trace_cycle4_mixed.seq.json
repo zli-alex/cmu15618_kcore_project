@@ -1,0 +1,29 @@
+{
+  "implementation": "sequential_week1",
+  "trace": {
+    "graph": "/Users/zhengfeili/2026_Spring/15618/cmu15618_kcore_project/datasets/tiny/fixed_traces/trace_cycle4_mixed.graph",
+    "batch": "/Users/zhengfeili/2026_Spring/15618/cmu15618_kcore_project/datasets/tiny/fixed_traces/trace_cycle4_mixed.batch"
+  },
+  "config": {
+    "num_levels": 8,
+    "group_size": 2,
+    "delta": 0.2,
+    "lambda": 9
+  },
+  "summary": {
+    "elapsed_ms": 0.004,
+    "promotions": 2,
+    "demotions": 0,
+    "invariant_fixups": 2
+  },
+  "levels": {
+    "before": [0, 0, 0, 0],
+    "after": [0, 1, 0, 1]
+  },
+  "coreness_estimate": [1, 1, 1, 1],
+  "moved_vertices": [1, 3],
+  "descriptor": {
+    "batch_number": 2,
+    "old_level": [0, 0, 0, 0]
+  }
+}

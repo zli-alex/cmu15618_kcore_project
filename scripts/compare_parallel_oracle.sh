@@ -11,7 +11,14 @@ traces=(
   "trace_triangle_insert"
   "trace_triangle_delete"
   "trace_path_mixed"
+  "trace_batch_only_edges"
+  "trace_star_mixed"
+  "trace_cycle4_mixed"
+  "trace_path_chord"
+  "trace_ks4_one_del"
 )
+
+PAR_CMP_THREADS="${PAR_CMP_THREADS:-4}"
 
 normalize_json_file() {
   python3 - "$1" <<'PY'
@@ -35,14 +42,28 @@ for trace in "${traces[@]}"; do
   batch="$ROOT_DIR/datasets/tiny/fixed_traces/${trace}.batch"
   seq_out="$OUT_DIR/${trace}.seq.json"
   par_out="$OUT_DIR/${trace}.par.json"
+  par1_out="$OUT_DIR/${trace}.par1.json"
+  parN_out="$OUT_DIR/${trace}.parN.json"
+
   "$ROOT_DIR/scripts/run_seq_trace.sh" "$graph" "$batch" "$seq_out"
   "$ROOT_DIR/scripts/run_par_trace.sh" "$graph" "$batch" "$par_out"
+
   if ! diff -q <(normalize_json_file "$seq_out") <(normalize_json_file "$par_out") >/dev/null; then
-    echo "[fail] normalized output mismatch: $trace"
+    echo "[fail] normalized output mismatch (sequential vs parallel@1): $trace"
     diff -u <(normalize_json_file "$seq_out") <(normalize_json_file "$par_out") || true
     exit 1
   fi
-  echo "[ok] oracle parity: $trace"
+  echo "[ok] oracle parity (sequential vs parallel@1): $trace"
+
+  "$ROOT_DIR/scripts/run_par_trace.sh" "$graph" "$batch" "$par1_out" --num-threads 1
+  "$ROOT_DIR/scripts/run_par_trace.sh" "$graph" "$batch" "$parN_out" --num-threads "$PAR_CMP_THREADS"
+
+  if ! diff -q <(normalize_json_file "$par1_out") <(normalize_json_file "$parN_out") >/dev/null; then
+    echo "[fail] normalized output mismatch (parallel@1 vs parallel@${PAR_CMP_THREADS}): $trace"
+    diff -u <(normalize_json_file "$par1_out") <(normalize_json_file "$parN_out") || true
+    exit 1
+  fi
+  echo "[ok] thread determinism (parallel@1 vs parallel@${PAR_CMP_THREADS}): $trace"
 done
 
-echo "All fixed tiny traces match sequential oracle (normalized). Outputs: $OUT_DIR"
+echo "All fixed tiny traces: seq == par@1 == par@${PAR_CMP_THREADS} (normalized). Outputs: $OUT_DIR"

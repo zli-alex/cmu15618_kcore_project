@@ -10,6 +10,11 @@ This document defines a lightweight baseline comparison workflow between:
 - `datasets/tiny/fixed_traces/trace_triangle_insert.*`
 - `datasets/tiny/fixed_traces/trace_triangle_delete.*`
 - `datasets/tiny/fixed_traces/trace_path_mixed.*`
+- `datasets/tiny/fixed_traces/trace_batch_only_edges.*`
+- `datasets/tiny/fixed_traces/trace_star_mixed.*`
+- `datasets/tiny/fixed_traces/trace_cycle4_mixed.*`
+- `datasets/tiny/fixed_traces/trace_path_chord.*`
+- `datasets/tiny/fixed_traces/trace_ks4_one_del.*`
 
 Each trace has two files:
 
@@ -20,6 +25,12 @@ Each trace has two files:
 
 ```bash
 scripts/run_tiny_trace_suite.sh
+```
+
+With external reference enabled:
+
+```bash
+REF_BIN=/absolute/path/to/reference_binary scripts/run_tiny_trace_suite.sh
 ```
 
 Outputs are written to:
@@ -46,4 +57,17 @@ Reference outputs (`*.ref.json`) include:
 - `raw_output` (captured stdout/stderr)
 - placeholder `levels/moved_vertices` fields (`null` for now)
 
-This is intentionally lightweight for Week 1: the goal is semantic drift detection, not full automated equivalence.
+Reference parse assumptions:
+
+- input graph: `u v` per line
+- input batch: `I u v` or `D u v` per line
+- parsed metrics: reference output lines like `### Key: Value`
+
+Failure modes:
+
+- missing/non-executable reference binary
+- non-zero reference process exit
+- incompatible output schema (no recognized `### Key: Value` metrics)
+
+This is intentionally lightweight: the goal is side-by-side monitoring and
+semantic drift detection, not full automated equivalence of all fields.

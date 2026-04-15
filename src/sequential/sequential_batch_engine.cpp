@@ -1,5 +1,6 @@
 #include "sequential/sequential_batch_engine.h"
 
+#include <cassert>
 #include <vector>
 
 #include "sequential/coreness.h"
@@ -71,12 +72,16 @@ BatchResult process_batch(SequentialBatchEngine& engine, const BatchUpdate& batc
   result.invariants_hold_after_deletions =
       all_vertices_satisfy_invariants(engine.graph, engine.config, engine.state);
 
+  engine.descriptors.unmark_all_roots_first();
   result.levels_after = snapshot_levels(engine.state);
   for (VertexId v = 0; v < result.levels_before.size(); ++v) {
     if (result.levels_before[v] != result.levels_after[v]) {
       result.moved_vertices.push_back(v);
-      engine.descriptors.parent[v] = v;
-      engine.descriptors.note_vertex_touched(v);
+#ifndef NDEBUG
+      assert(v < engine.descriptors.first_mutation_recorded.size());
+      assert(engine.descriptors.first_mutation_recorded[v] == 1 &&
+             "descriptor lifecycle hook missing for moved vertex");
+#endif
     }
   }
 

@@ -10,7 +10,7 @@ VertexId find_root(const DescriptorState& descriptors, VertexId v) {
   }
 
   VertexId current = v;
-  // Traversal-only Week 1 scaffold; Week 2+ can add path compression.
+  // Traversal-only scaffold; path compression can be added with full CPLDS DAG work.
   for (std::size_t steps = 0; steps < descriptors.parent.size(); ++steps) {
     const VertexId parent = descriptors.parent[current];
     if (parent == current || parent >= descriptors.parent.size()) {
@@ -22,47 +22,38 @@ VertexId find_root(const DescriptorState& descriptors, VertexId v) {
 }
 
 DagMarkStatus check_dag(const DescriptorState& descriptors, VertexId v) {
-  (void)find_root(descriptors, v);
-  // Week 1 behavior: all reads are on finalized batch state.
-  // Therefore, descriptors are treated as logically UNMARKED.
+  const VertexId root = find_root(descriptors, v);
+  if (root < descriptors.marked.size() && descriptors.marked[root] != 0) {
+    return DagMarkStatus::Marked;
+  }
   return DagMarkStatus::Unmarked;
 }
 
 double read_estimate(const LDSConfig& config, const LDSState& state,
                      const DescriptorState& descriptors, VertexId v,
                      ReadDebugInfo* debug) {
-  // This retry skeleton mirrors Algorithm 4 shape for Week 2+ upgrades.
-  for (int attempt = 0; attempt < 4; ++attempt) {
-    const std::size_t b1 = descriptors.batch_number;
-    const int l1 = state.level(v);
-    const int old_level = (v < descriptors.old_level.size()) ? descriptors.old_level[v] : l1;
-    const VertexId root = find_root(descriptors, v);
-    const DagMarkStatus status = check_dag(descriptors, root);
-    const int l2 = state.level(v);
-    const std::size_t b2 = descriptors.batch_number;
+  const std::size_t b1 = descriptors.batch_number;
+  const int l1 = state.level(v);
+  const int old_level_v =
+      (v < descriptors.old_level.size()) ? descriptors.old_level[v] : l1;
+  const VertexId root = find_root(descriptors, v);
+  const DagMarkStatus status = check_dag(descriptors, v);
+  const int l2 = state.level(v);
+  const std::size_t b2 = descriptors.batch_number;
 
-    if (debug != nullptr) {
-      debug->batch_before = b1;
-      debug->batch_after = b2;
-      debug->live_level_first = l1;
-      debug->live_level_second = l2;
-      debug->descriptor_old_level = old_level;
-      debug->root = root;
-      debug->dag_status = status;
-    }
-
-    if (b1 != b2) {
-      continue;
-    }
-    if (status == DagMarkStatus::Marked) {
-      return estimate_coreness_from_level(config, old_level, state.num_vertices());
-    }
-    if (l1 == l2) {
-      return estimate_coreness_from_level(config, l1, state.num_vertices());
-    }
+  if (debug != nullptr) {
+    debug->batch_before = b1;
+    debug->batch_after = b2;
+    debug->live_level_first = l1;
+    debug->live_level_second = l2;
+    debug->descriptor_old_level = old_level_v;
+    debug->root = root;
+    debug->dag_status = status;
   }
 
-  // Finalized-state fallback for Week 1.
+  if (status == DagMarkStatus::Marked) {
+    return estimate_coreness_from_level(config, old_level_v, state.num_vertices());
+  }
   return estimate_coreness_from_level(config, state.level(v), state.num_vertices());
 }
 

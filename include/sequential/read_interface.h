@@ -9,21 +9,23 @@
 
 namespace seq {
 
-// Week 1 scaffold for CPLDS read-side semantics from:
-// - Algorithm 3: check_DAG(desc)
-// - Algorithm 4: read(v)
+// CPLDS read-side scaffold (Algorithm 3 / 4 shape; lock-free retries deferred).
 //
-// This interface is intentionally shaped to match the future concurrent read path:
-// 1) read batch number (b1)
+// Intended future concurrent read sequence (batch sandwich + retries) is documented
+// below; the current implementation uses a single snapshot for the return value.
+//
+// Snapshot behavior today:
+// 1) read batch number (b1) — recorded in ReadDebugInfo only; does not affect return value
 // 2) read live level (l1)
-// 3) read descriptor data (old_level, parent)
-// 4) run check_DAG / root traversal
-// 5) read live level again (l2)
-// 6) read batch number again (b2)
-// 7) return old_level estimate if MARKED else live-level estimate
+// 3) read descriptor data (old_level[v], parent)
+// 4) find root via parent pointers; check_dag(v) is Marked iff marked[root]
+// 5) read live level again (l2) — ReadDebugInfo only
+// 6) read batch number again (b2) — ReadDebugInfo only
+// 7) Return value: if Marked, coreness from old_level[v] (per-vertex); else live state.level(v).
+//    Batch-number sandwich / retries are not used to alter returns yet.
 //
-// In Week 1, updates are processed sequentially and reads observe finalized state,
-// so check_DAG always returns UNMARKED and reads return live-level estimates.
+// Finalized post-batch: update path clears all marked bits, so check_dag is always
+// Unmarked and read_estimate matches live-level coreness.
 enum class DagMarkStatus { Marked, Unmarked };
 
 struct ReadDebugInfo {
@@ -36,13 +38,13 @@ struct ReadDebugInfo {
   DagMarkStatus dag_status = DagMarkStatus::Unmarked;
 };
 
-// Week 1 root traversal scaffold (future Algorithm 3 helper path).
+// Follow parent pointers until a self-loop or invalid parent; returns the root id.
 VertexId find_root(const DescriptorState& descriptors, VertexId v);
 
-// Week 1 check_DAG scaffold. Always UNMARKED for finalized-state reads.
+// Marked iff the root of v's parent component has marked[root] set.
 DagMarkStatus check_dag(const DescriptorState& descriptors, VertexId v);
 
-// Read-facing API for coreness estimate of a vertex.
+// Coreness estimate for v: old_level[v] when DAG root is marked, else live level.
 double read_estimate(const LDSConfig& config, const LDSState& state,
                      const DescriptorState& descriptors, VertexId v,
                      ReadDebugInfo* debug = nullptr);

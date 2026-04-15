@@ -11,8 +11,10 @@ struct ParallelOptions {
   int num_threads = 1;
 };
 
-/// Parallel batch engine skeleton. Same batch input model as the sequential oracle;
-/// insertion-then-deletion partitioning is explicit at this boundary.
+/// Parallel PLDS-style batch engine: same batch input model as the sequential oracle;
+/// insertion-then-deletion partitioning is explicit at this boundary. Update path uses
+/// per-level parallel scans with deterministic serial merges; semantics match `process_batch`
+/// on the frozen sequential engine for validated traces.
 struct ParallelBatchEngine {
   ParallelBatchEngine(SequentialBatchEngine sequential_engine, ParallelOptions options);
 

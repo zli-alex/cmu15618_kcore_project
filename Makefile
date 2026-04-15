@@ -1,6 +1,6 @@
 CXX ?= c++
 CXXFLAGS := -std=c++17 -O2 -Wall -Wextra -pedantic -Iinclude
-LDFLAGS :=
+LDFLAGS := -pthread
 UNAME_S := $(shell uname -s)
 
 ifeq ($(UNAME_S),Darwin)
@@ -16,7 +16,9 @@ PAR_TRACE_TARGET := par_trace_runner
 CORE_PKG := $(wildcard src/core/*.cpp)
 SEQ_PKG := $(filter-out src/sequential/main.cpp src/sequential/trace_runner.cpp,$(wildcard src/sequential/*.cpp))
 COMMON_PKG := $(CORE_PKG) $(SEQ_PKG)
-PAR_IMPL_SRC := src/parallel/parallel_batch_engine.cpp
+PAR_IMPL_SRC := src/parallel/parallel_batch_engine.cpp \
+	src/parallel/parallel_insertion.cpp \
+	src/parallel/parallel_deletion.cpp
 PAR_TRACE_SRC := src/parallel/trace_runner.cpp
 
 SEQ_MAIN_SRC := src/sequential/main.cpp
@@ -34,6 +36,9 @@ PAR_TRACE_OBJ_ALL := $(COMMON_OBJ) $(PAR_IMPL_OBJ) $(PAR_TRACE_OBJ)
 
 TEST_SRC := $(wildcard tests/sequential/*.cpp)
 TEST_BINS := $(patsubst tests/sequential/%.cpp,tests/sequential/bin/%,$(TEST_SRC))
+PARALLEL_TEST_SRC := $(wildcard tests/parallel/*.cpp)
+PARALLEL_TEST_BINS := $(patsubst tests/parallel/%.cpp,tests/parallel/bin/%,$(PARALLEL_TEST_SRC))
+ALL_TEST_BINS := $(TEST_BINS) $(PARALLEL_TEST_BINS)
 
 .PHONY: all clean test
 
@@ -60,12 +65,19 @@ src/parallel/%.o: src/parallel/%.cpp
 tests/sequential/bin/%: tests/sequential/%.cpp $(COMMON_PKG) | tests/sequential/bin
 	$(CXX) $(CXXFLAGS) $< $(COMMON_PKG) -o $@ $(LDFLAGS)
 
+tests/parallel/bin/%: tests/parallel/%.cpp $(COMMON_PKG) $(PAR_IMPL_SRC) | tests/parallel/bin
+	$(CXX) $(CXXFLAGS) -Itests/sequential $< $(COMMON_PKG) $(PAR_IMPL_SRC) -o $@ $(LDFLAGS)
+
 tests/sequential/bin:
 	mkdir -p tests/sequential/bin
 
-test: $(TEST_BINS)
-	for t in $(TEST_BINS); do echo "[test] $$t"; $$t || exit 1; done
+tests/parallel/bin:
+	mkdir -p tests/parallel/bin
+
+test: $(ALL_TEST_BINS)
+	for t in $(ALL_TEST_BINS); do echo "[test] $$t"; $$t || exit 1; done
 
 clean:
 	rm -f $(TARGET) $(TRACE_TARGET) $(PAR_TRACE_TARGET)
 	rm -f $(SEQ_OBJ) $(TRACE_OBJ) $(PAR_TRACE_OBJ_ALL)
+	rm -f $(PARALLEL_TEST_BINS)

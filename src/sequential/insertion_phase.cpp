@@ -25,10 +25,11 @@ void apply_insertions(Graph& graph, LDSState& state, DescriptorState& descriptor
         continue;
       }
       if (!check_invariant1_vertex(graph, config, state, v)) {
+        const int level_before = state.level(v);
         if (promote_vertex_one_level(graph, config, state, v)) {
           ++(*num_promotions);
           ++(*num_invariant_fixups);
-          descriptors.note_vertex_touched(v);
+          descriptors.on_level_mutation_start(v, level_before);
         }
       }
     }

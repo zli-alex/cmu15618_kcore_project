@@ -67,7 +67,24 @@ cd third_party/reference_impl
 # e.g., cmake -S . -B build && cmake --build build -j
 ```
 
-## 4) Run the reference manually
+## 4) Configure `REF_BIN`
+
+All helper scripts use:
+
+- `REF_BIN` (optional): absolute path to the external reference executable.
+- default if unset: `third_party/reference_impl/reference_runner`
+
+Example:
+
+```bash
+export REF_BIN=/absolute/path/to/reference_binary
+```
+
+If `REF_BIN` is unset, reference runs are skipped in tiny-trace helper scripts.
+If `REF_BIN` is set, scripts expect the binary to be executable and fail clearly
+when invocation or parsing fails.
+
+## 5) Run the reference manually
 
 Run the reference binary according to its own CLI format.
 
@@ -80,3 +97,11 @@ cd third_party/reference_impl
 
 For this project, a helper script exists at `scripts/run_reference.sh` that
 checks for a configured binary path and prints instructions if missing.
+
+For a first wiring check, use:
+
+```bash
+REF_BIN=/absolute/path/to/reference_binary ./scripts/check_reference_smoke.sh
+```
+
+See `docs/reference_wiring.md` for the tiny-trace workflow and output details.

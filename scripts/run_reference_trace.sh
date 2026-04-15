@@ -4,7 +4,10 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 if [[ $# -lt 3 ]]; then
-  echo "Usage: scripts/run_reference_trace.sh <graph.txt> <batch.txt> <out.json> [reference args...]"
+  echo "Usage: scripts/run_reference_trace.sh <graph.txt> <batch.txt> <out.json> [reference args...]" >&2
+  echo "Runs external reference binary and writes normalized JSON output." >&2
+  echo "Input assumptions: graph uses 'u v' lines; batch uses 'I u v' / 'D u v' lines." >&2
+  echo "Reference output assumption: lines prefixed with '### key: value' for parsed metrics." >&2
   exit 1
 fi
 
@@ -108,12 +111,22 @@ for b in reversed(batches):
         final_coreness = b["coreness_estimate"]
         break
 
+parse_ok = bool(batches) or bool(totals)
+parse_status = "ok" if parse_ok else "incompatible_output_schema"
+failure_reason = None
+if int(status) != 0:
+    failure_reason = "reference_process_failed"
+elif not parse_ok:
+    failure_reason = "no_recognized_reference_metrics"
+
 normalized = {
     "implementation": "reference_parlaylib",
     "trace": {"graph": graph, "batch": batch},
     "summary": {
         "exit_status": int(status),
         "elapsed_ms": elapsed_ms,
+        "parse_status": parse_status,
+        "failure_reason": failure_reason,
     },
     "batches": batches,
     "totals": totals,
@@ -125,10 +138,34 @@ normalized = {
 
 pathlib.Path(out_path).write_text(json.dumps(normalized, indent=2) + "\n")
 print(f"Wrote normalized reference output: {out_path}")
+if not parse_ok and int(status) == 0:
+    print(
+        "[error] Reference process exited 0 but output did not match expected "
+        "'### key: value' metric schema.",
+        file=sys.stderr,
+    )
+    print("[error] Inspect raw_output in the JSON file for details.", file=sys.stderr)
 PY
 
 rm -f "$TMP_RAW"
 
 if [[ "$status" -ne 0 ]]; then
+  echo "[error] Reference process failed with exit status $status." >&2
+  echo "[error] Raw output was captured into: $OUT_PATH (raw_output field)." >&2
   exit "$status"
+fi
+
+parse_status="$(python3 - <<'PY' "$OUT_PATH"
+import json
+import pathlib
+import sys
+doc = json.loads(pathlib.Path(sys.argv[1]).read_text())
+print(doc.get("summary", {}).get("parse_status", "unknown"))
+PY
+)"
+if [[ "$parse_status" != "ok" ]]; then
+  echo "[error] Reference output schema incompatible (parse_status=$parse_status)." >&2
+  echo "[error] Expected at least one recognized '### key: value' metric line." >&2
+  echo "[error] Raw output available in: $OUT_PATH (raw_output field)." >&2
+  exit 2
 fi

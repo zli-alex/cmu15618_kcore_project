@@ -1,0 +1,29 @@
+{
+  "implementation": "sequential_week1",
+  "trace": {
+    "graph": "/Users/zhengfeili/2026_Spring/15618/cmu15618_kcore_project/datasets/tiny/fixed_traces/trace_path_chord.graph",
+    "batch": "/Users/zhengfeili/2026_Spring/15618/cmu15618_kcore_project/datasets/tiny/fixed_traces/trace_path_chord.batch"
+  },
+  "config": {
+    "num_levels": 8,
+    "group_size": 2,
+    "delta": 0.2,
+    "lambda": 9
+  },
+  "summary": {
+    "elapsed_ms": 0.002,
+    "promotions": 0,
+    "demotions": 0,
+    "invariant_fixups": 0
+  },
+  "levels": {
+    "before": [0, 0, 0, 0],
+    "after": [0, 0, 0, 0]
+  },
+  "coreness_estimate": [1, 1, 1, 1],
+  "moved_vertices": [],
+  "descriptor": {
+    "batch_number": 2,
+    "old_level": [0, 0, 0, 0]
+  }
+}

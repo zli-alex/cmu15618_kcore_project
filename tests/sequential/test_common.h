@@ -26,6 +26,17 @@
     }                                                                          \
   } while (0)
 
+#define EXPECT_NE(a, b)                                                        \
+  do {                                                                         \
+    const auto va = (a);                                                       \
+    const auto vb = (b);                                                       \
+    if (va == vb) {                                                            \
+      std::cerr << "EXPECT_NE failed: " #a "=" << va << " " #b "=" << vb      \
+                << " at " << __FILE__ << ":" << __LINE__ << "\n";             \
+      std::exit(1);                                                            \
+    }                                                                          \
+  } while (0)
+
 #define EXPECT_VEC_EQ(a, b)                                                    \
   do {                                                                         \
     const auto va = (a);                                                       \

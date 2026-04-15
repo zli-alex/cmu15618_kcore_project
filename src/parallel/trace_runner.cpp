@@ -190,7 +190,7 @@ int main(int argc, char** argv) {
   }
 
   out << "{\n";
-  out << "  \"implementation\": \"parallel_week2_skeleton\",\n";
+  out << "  \"implementation\": \"parallel_week2_level_parallel\",\n";
   out << "  \"trace\": {\n";
   out << "    \"graph\": \"" << args.graph_path << "\",\n";
   out << "    \"batch\": \"" << args.batch_path << "\"\n";

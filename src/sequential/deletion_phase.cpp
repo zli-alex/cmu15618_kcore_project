@@ -110,13 +110,13 @@ void apply_deletions(Graph& graph, LDSState& state, DescriptorState& descriptors
           continue;
         }
         const int old_level = state.level(v);
+        descriptors.on_level_mutation_start(v, old_level);
         state.set_level(v, l);
         moved[v] = true;
         desire[v] = -1;
         moved_this_round.push_back(v);
         *num_demotions += static_cast<std::size_t>(old_level - l);
         *num_invariant_fixups += static_cast<std::size_t>(old_level - l);
-        descriptors.note_vertex_touched(v);
       }
 
       movers.clear();
