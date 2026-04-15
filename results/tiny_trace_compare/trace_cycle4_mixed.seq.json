@@ -11,7 +11,7 @@
     "lambda": 9
   },
   "summary": {
-    "elapsed_ms": 0.004,
+    "elapsed_ms": 0.003,
     "promotions": 2,
     "demotions": 0,
     "invariant_fixups": 2
