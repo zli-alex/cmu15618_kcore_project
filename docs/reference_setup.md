@@ -39,6 +39,19 @@ git status --short
 
 to confirm whether the reference checkout was clean.
 
+### Current local checkout note (2026-04-14)
+
+- Reference repo path used: `third_party/batch-dynamic-kcore-decomposition/`
+- Commit hash: `b0b7a1753679c05e33982815adb621028cd9d68e`
+- `git status --short` output: empty (clean working tree)
+
+### Known blocker (deferred)
+
+On current machines, the upstream setup/build flow is Linux-oriented and may
+require `sudo` + `apt` or Linux-specific toolchain/runtime assumptions.
+Reference execution is deferred for Week 1 unless we later choose to patch
+submodule build scripts or run in a compatible Linux environment.
+
 ## 3) Build the reference manually
 
 Build commands depend on that repository's own build system. Run the commands

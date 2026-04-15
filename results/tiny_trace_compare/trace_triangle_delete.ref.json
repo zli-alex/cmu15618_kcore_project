@@ -1,0 +1,20 @@
+{
+  "implementation": "reference_parlaylib",
+  "trace": {
+    "graph": "/Users/zhengfeili/2026_Spring/15618/cmu15618_kcore_project/datasets/tiny/fixed_traces/trace_triangle_delete.graph",
+    "batch": "/Users/zhengfeili/2026_Spring/15618/cmu15618_kcore_project/datasets/tiny/fixed_traces/trace_triangle_delete.batch"
+  },
+  "summary": {
+    "exit_status": 1,
+    "elapsed_ms": 45.69
+  },
+  "batches": [],
+  "totals": {},
+  "levels": {
+    "before": null,
+    "after": null
+  },
+  "coreness_estimate": null,
+  "moved_vertices": null,
+  "raw_output": "Reference binary not found or not executable: /Users/zhengfeili/2026_Spring/15618/cmu15618_kcore_project/third_party/reference_impl/reference_runner\n\nSetup instructions:\n1) Place the external reference repo at:\n   third_party/reference_impl/\n2) Build it manually following its own README.\n3) Re-run with:\n   REF_BIN=/absolute/path/to/reference_binary scripts/run_reference.sh [args]\n\nSee docs/reference_setup.md for full details.\n"
+}

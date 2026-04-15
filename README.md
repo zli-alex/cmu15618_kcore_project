@@ -9,9 +9,10 @@ maintenance under batched graph updates.
 make
 ```
 
-This builds the sequential placeholder executable:
+This builds:
 
 - `./seq_runner`
+- `./seq_trace_runner`
 
 ## Run
 
@@ -34,6 +35,23 @@ baseline.
 - Follow setup/build/run instructions in `docs/reference_setup.md`
 - Use `scripts/run_reference.sh` as a helper launcher once you know the binary
   path (set `REF_BIN` if needed)
+
+## Tiny trace comparison harness
+
+To compare Week 1 sequential behavior with the ParlayLib/GBBS reference
+baseline on fixed tiny traces:
+
+```bash
+scripts/run_tiny_trace_suite.sh
+```
+
+This runs:
+
+- `scripts/run_seq_trace.sh` (normalized sequential dump)
+- `scripts/run_reference_trace.sh` (normalized reference wrapper + raw output)
+
+Outputs go to `results/tiny_trace_compare/`. See `docs/tiny_trace_baseline.md`
+for details on traces and dump format.
 
 ## Project Layout
 
